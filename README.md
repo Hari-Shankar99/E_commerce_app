@@ -1,5 +1,5 @@
 # E_commerce_app
-Demo Video: https://youtu.be/eWXl6pGvg58
+Demo Video: https://youtu.be/5PzTXGTQVXs
 
 This is a basic E commerce app built with React Native.
 functionality
