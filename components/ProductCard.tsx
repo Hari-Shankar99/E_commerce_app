@@ -1,11 +1,19 @@
 import React from 'react';
-import {View, StyleSheet, Text, Image, TouchableOpacity} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Platform,
+  ToastAndroid,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
+import {Product} from '../store';
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   product: {
+    flex: 1,
+    justifyContent: 'space-between',
     width: '48%',
     alignItems: 'center',
     borderWidth: 0.75,
@@ -24,20 +32,11 @@ const styles = StyleSheet.create({
     marginTop: 9,
     width: 150,
     height: 150,
-  },
-  image: {
-    width: 10,
-    height: 10,
-  },
-  button: {
-    margin: 1,
-    backgroundColor: 'red',
-    height: 10,
+    resizeMode: 'contain',
     borderRadius: 20,
-    padding: 1,
   },
 });
-import {Product} from '../store';
+
 function productCard({
   product,
   onPress,
@@ -45,9 +44,17 @@ function productCard({
   product: Product;
   onPress: (item: Product) => void;
 }) {
+  const showToast = (message: string) => {
+    ToastAndroid.show(message, ToastAndroid.SHORT);
+  };
   return (
     <>
-      <TouchableOpacity style={styles.product} onPress={() => onPress(product)}>
+      <TouchableOpacity
+        style={styles.product}
+        onPress={() => {
+          Platform.OS === 'android' ? showToast('Item added to Cart!') : null;
+          onPress(product);
+        }}>
         <Image
           style={styles.productImage}
           source={
@@ -58,16 +65,20 @@ function productCard({
               : require('../images/default/default_pic.png')
           }
         />
+
         <Text
           style={{
             ...styles.text,
-            paddingTop: 3,
+            padding: 3,
             fontSize: 15,
-            fontWeight: '400',
+            fontWeight: '500',
           }}>
           {product.name}
         </Text>
-        <Text style={{...styles.text, marginBottom: 2}}>{product.price}</Text>
+        <Text
+          style={{
+            ...styles.text,
+          }}>{`Rs: ${product.price}`}</Text>
       </TouchableOpacity>
     </>
   );

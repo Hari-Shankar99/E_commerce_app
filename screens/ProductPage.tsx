@@ -1,68 +1,59 @@
 // import {StatusBar} from 'expo-status-bar';
-import {
-  ActivityIndicator,
-  Button,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {ActivityIndicator, Button, Text, View} from 'react-native';
 import React, {useEffect} from 'react';
-import {DataStore, Product, useStore} from '../store';
-import {NativeStackNavigationOptions} from '@react-navigation/native-stack';
+import {DataStore, useStore} from '../store';
 import {useState} from 'react';
-import {useQuery, useQueryClient} from '@tanstack/react-query';
+import {useQuery} from '@tanstack/react-query';
 import {StyleSheet} from 'react-native';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import ProductCard from '../components/ProductCard';
 import {FlatList} from 'react-native';
 import openseaAPI from '../api/opensea';
-import {NavigationEvents} from 'react-navigation';
-import {
-  ProductPageNavigationProp,
-  CartPageNavigationProp,
-} from '../navigation/types';
-import {useNavigation} from '@react-navigation/native';
-import CartPage from './CartPage';
-import CartButton from '../components/CartButton';
 
 const styles = StyleSheet.create({
+  loadingMsg: {
+    marginTop: '45%',
+  },
+  errorMsg: {textAlign: 'center', textAlignVertical: 'center'},
+  flatList: {
+    padding: 10,
+  },
   flexPage: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+ 
   },
   pageNumber: {
+    paddingVertical: 2,
     fontSize: 18,
     flex: 1,
     alignSelf: 'center',
+    backgroundColor: 'white',
+    borderRadius: 20,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    marginVertical: 30,
   },
-  previous: {
-    flex: 1,
-  },
-  next: {
-    flex: 1,
+  pageButtons: {
+    flex: 5,
+    marginHorizontal: 20,
   },
 });
+
 type QueryKey = {queryKey: [string, number]};
-const queryClient = new QueryClient();
+type Data = {collections: object};
 
 function ProductPage() {
-  const navigation = useNavigation<ProductPageNavigationProp>();
+  // const navigation = useNavigation<ProductPageNavigationProp>();
 
-  const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
   const [products, setProducts] = useState([]);
-  const cartLength = useStore((state: DataStore) => state.cart.length);
   const addToCart = useStore((state: DataStore) => state.addToCart);
-  const deleteFromCart = useStore((state: DataStore) => state.deleteFromCart);
 
   const fetchProducts = async ({queryKey}: QueryKey) => {
     const startPage = queryKey[1];
-    return openseaAPI.get<Product[]>('', {
+    return openseaAPI.get('', {
       params: {
         offset: startPage * 10,
         limit: 10,
@@ -75,57 +66,59 @@ function ProductPage() {
     isError,
     isSuccess,
     isLoading,
-    status,
   } = useQuery(['products', page], fetchProducts);
+
   useEffect(() => {
     console.log('checking status');
     if (isSuccess) {
+      const data = response.data as Data;
       setProducts(
-        response.data.collections.map((item, index: number) => {
-          return {
-            id: page * 10 + index,
-            name: item.name,
-            image: item.image_url,
-            price: item.stats.average_price+20,
-          };
-        }),
+        response.data.collections.map(
+          (
+            item: object & {
+              name: string;
+              image_url: string;
+              stats: {average_price: number};
+            },
+            index: number,
+          ) => {
+            return {
+              id: page * 10 + index,
+              name: item.name,
+              image: item.image_url,
+              price: item.stats.average_price + 20,
+            };
+          },
+        ),
       );
     } else if (isError) {
       setErrorMsg(error.message);
     }
-  }, [response, error]);
-  // useEffect(() => {
-  //   navigation.setOptions({
-  //     headerRight: () => (
+  }, [response, error, isError, isSuccess, page]);
 
-  //     ),
-  //   });
-  // }, [cartLength]);
   return (
     <View>
       {isLoading ? (
-        <View
-          style={{
-            marginTop:'45%',
-          }}>
-          <ActivityIndicator size="large"/>
+        <View style={styles.loadingMsg}>
+          <ActivityIndicator size="large" />
         </View>
       ) : isError ? (
-        <Text>{error.message}</Text>
+        <Text style={styles.errorMsg}>{errorMsg}</Text>
       ) : (
         <FlatList
           data={products}
           numColumns={2}
           keyExtractor={(item, index) => index.toString()}
-          style={{padding: 10}}
+          style={styles.flatList}
           renderItem={({item}) => (
             <ProductCard product={item} onPress={addToCart} />
           )}
           ListFooterComponent={() => (
             <View style={styles.footer}>
-              <View style={styles.previous}>
+              <View style={styles.pageButtons}>
                 <Button
-                  title={page === 0 ? '' : 'Previous'}
+                  disabled={page === 0}
+                  title={'Previous'}
                   onPress={() => {
                     if (page !== 0) {
                       setPage(page - 1);
@@ -133,14 +126,19 @@ function ProductPage() {
                   }}
                 />
               </View>
-              <View>
-                <Text style={styles.pageNumber}>{page + 1}</Text>
+              <View style={styles.pageNumber}>
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    textAlignVertical: 'center',
+                  }}>{page + 1}</Text>
               </View>
-              <View style={styles.next}>
+              <View style={styles.pageButtons}>
                 <Button title="Next" onPress={() => setPage(page + 1)} />
               </View>
             </View>
-          )}></FlatList>
+          )}
+        />
       )}
     </View>
   );

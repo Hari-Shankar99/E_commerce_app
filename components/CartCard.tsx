@@ -1,46 +1,58 @@
 import React from 'react';
-import {View, StyleSheet, Text, Image, TouchableOpacity} from 'react-native';
-import { CartItem } from '../store';
+import {
+  View,
+  StyleSheet,
+  Platform,
+  ToastAndroid,
+  Text,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
+import {CartItem} from '../store';
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   cartItem: {
     width: '98%',
-    flexDirection:'row',
+    flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 0.75,
     margin: '1%',
 
-    backgroundColor: '#a2ebb5',
+    backgroundColor: '#bbedaf', //'#a2ebb5'
     borderRadius: 20,
   },
   text: {
     padding: 2,
-    fontSize: 15,
     fontFamily: 'arial',
+    marginHorizontal: 'auto',
+    fontSize: 15,
+    fontWeight: 'bold',
   },
   itemImage: {
     width: 150,
     height: 150,
+    margin: 10,
+    borderRadius: 20,
   },
   image: {
-    width: 10,
-    height: 10,
+    width: 15,
+    height: 20,
   },
   verticalFlex: {
-    flexDirection:'column',
+    width: '50%',
+    flexDirection: 'column',
   },
 });
-import {Product} from '../store';
 
 function CartCard({
   product,
   onPress,
 }: {
   product: CartItem;
-  onPress: (item: CartItem) => void;
+  onPress: (itemId: number) => void;
 }) {
+  const showToast = (message: string) => {
+    ToastAndroid.show(message, ToastAndroid.SHORT);
+  };
   return (
     <>
       <View style={styles.cartItem}>
@@ -49,24 +61,48 @@ function CartCard({
           source={
             product.image
               ? {
-                  uri: 'https://openseauserdata.com/files/d9cb15726fd692ea9795dd093e6822c3.jpg',
+                  uri: product.image,
                 }
               : require('../images/default/default_pic.png')
           }
         />
-        <View style = {styles.verticalFlex}>
-        <Text
-          style={{
-            ...styles.text,
-            height:40,
-            width: '65%',
-            paddingTop: 3,
-            fontSize: 15,
-            fontWeight: '500',
-          }}> <Text style = {{color:'red'}}>{`${product.count} X  `}</Text>
-          {product.name}
-        </Text>
-        <Text style={{...styles.text, marginBottom: 2}}>{`Rs: ${product.price}`}</Text>
+        <View style={styles.verticalFlex}>
+          <Text
+            style={{
+              ...styles.text,
+              color: 'red',
+              marginTop: 1,
+            }}>{`${product.count} X`}</Text>
+
+          <Text style={styles.text}>{product.name}</Text>
+
+          <Text
+            style={{
+              ...styles.text,
+              marginBottom: 1,
+              fontWeight: '100',
+            }}>{`Rs: ${product.price}`}</Text>
+
+          <View style={{paddingLeft: 20, paddingTop: 10, marginTop: 20}}>
+            <TouchableOpacity
+              style={{
+                width: 19,
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+              }}
+              onPress={() => {
+                Platform.OS === 'android'
+                  ? showToast('Item deleted from Cart!')
+                  : null;
+                onPress(product.id);
+              }}>
+              <Image
+                style={styles.image}
+                source={require('../images/delete.png')}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </>

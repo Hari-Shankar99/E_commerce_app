@@ -1,21 +1,15 @@
-import {Button, TouchableOpacity,Text} from 'react-native';
+import {TouchableOpacity} from 'react-native';
 import React from 'react';
-import {NavigationEvents} from 'react-navigation';
-import {
-  ProductPageNavigationProp,
-  CartPageNavigationProp,
-} from '../navigation/types';
-import {useNavigation} from '@react-navigation/native';
+import {AppPageNavigationProp} from '../navigation/types';
 import CartPic from './CartPic';
-function CartButton({Navigation,count}) {
+function CartButton({Navigation}: {Navigation: AppPageNavigationProp}) {
   return (
     <TouchableOpacity
-      style ={{flexDirection:'row'}}
+      style={{flexDirection: 'row'}}
       onPress={() => {
         Navigation.navigate('CartPage');
-      }}
-    ><CartPic/>
-    <Text>{count.toString()}</Text>
+      }}>
+      <CartPic />
     </TouchableOpacity>
   );
 }
