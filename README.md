@@ -1,6 +1,6 @@
 # E_commerce_app
 Demo Video: https://youtu.be/5PzTXGTQVXs
-
+App APK and IPA: https://drive.google.com/drive/folders/1cpxRnVZ5pL6CcLFy9_3INgaH7k8bdkFz?usp=sharing
 This is a basic E commerce app built with React Native.
 functionality
 1.fetches products with api call,
